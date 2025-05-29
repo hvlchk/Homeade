@@ -1,24 +1,27 @@
 importScripts('https://cdn.onesignal.com/sdks/OneSignalSDKWorker.js');
 
-// ✅ Custom behavior: focus or open installed PWA window on notification click
+// ✅ Dynamically open a URL if provided in the push payload
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
-  const urlToOpen = new URL('/main', self.location.origin).href;
+  const data = event.notification.data || {};
+  const targetUrl = data.url || '/main';
+  const urlToOpen = new URL(targetUrl, self.location.origin).href;
 
-  event.waitUntil(
-    clients.matchAll({
+  event.waitUntil((async () => {
+    const allClients = await clients.matchAll({
       type: 'window',
       includeUncontrolled: true
-    }).then(function(clientList) {
-      for (let client of clientList) {
-        if (client.url === urlToOpen && 'focus' in client) {
-          return client.focus();
-        }
+    });
+
+    for (const client of allClients) {
+      if (client.url === urlToOpen && 'focus' in client) {
+        return client.focus();
       }
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
-    })
-  );
+    }
+
+    if (clients.openWindow) {
+      return clients.openWindow(urlToOpen);
+    }
+  })());
 });
