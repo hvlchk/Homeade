@@ -4,7 +4,7 @@ importScripts('https://cdn.onesignal.com/sdks/OneSignalSDKWorker.js');
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
-  const urlToOpen = new URL('/', self.location.origin).href;
+  const urlToOpen = new URL('/main', self.location.origin).href;
 
   event.waitUntil(
     clients.matchAll({
